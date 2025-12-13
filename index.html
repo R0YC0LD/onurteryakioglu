@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/tr/6/62/Marmara_%C3%9Cniversitesi_logo.png" type="image/png">
+    <link rel="icon" href="marmara.png" type="image/png">
     
-    <title>Onur Teryakioğlu | The Archive</title>
+    <title>Onur Teryakioğlu | Student CV</title>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Playfair+Display+SC:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -294,12 +294,21 @@
             font-size: 0.95rem;
             line-height: 1.5;
             color: #b0a498;
+            margin-bottom: 5px;
         }
 
+        /* LİNK STİLİ (HIGHLIGHT GÜNCELLENDİ) */
         .highlight {
             color: var(--vintage-gold);
             font-weight: 700;
             text-decoration: underline;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .highlight:hover {
+            color: #fff;
+            text-decoration-style: double;
         }
 
         /* Yetenekler */
@@ -497,7 +506,8 @@
             <div class="edu-flex">
                 <img src="marmara.png" alt="Marmara" class="uni-logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/tr/6/62/Marmara_%C3%9Cniversitesi_logo.png'">
                 <div class="edu-info">
-                    <p class="highlight">Marmara Üniversitesi</p>
+                    <a href="https://elm-teknoloji.marmara.edu.tr" target="_blank" class="highlight">Marmara Üniversitesi</a>
+                    
                     <p>Elektrik - Elektronik Mühendisliği</p>
                     <p style="font-size: 0.8rem; font-style: italic; margin-top:5px;">Kayıt Tarihi: 2025 - [AKTİF]</p>
                 </div>
