@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/tr/6/62/Marmara_%C3%9Cniversitesi_logo.png" type="image/png">
+    
     <title>Onur Teryakioğlu | The Archive</title>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Playfair+Display+SC:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -434,7 +437,8 @@
 
     <audio id="bg-music" loop preload="auto">
         <source src="music.mp3" type="audio/mpeg">
-        <source src="music.ogg" type="audio/ogg"> </audio>
+        <source src="music.ogg" type="audio/ogg">
+    </audio>
 
     <div class="film-overlay"></div> <div class="vignette"></div> <div class="scratch-line"></div> 
     
@@ -555,9 +559,8 @@
         const musicIcon = document.getElementById('music-icon');
         let isPlaying = false;
 
-        // Siteye Giriş (Kullanıcı Tıkladığında)
+        // Siteye Giriş
         function enterSite() {
-            // Görsel geçişler
             enterScreen.style.opacity = '0';
             enterScreen.style.visibility = 'hidden';
             mainContent.style.display = 'block';
@@ -568,35 +571,27 @@
                 checkScroll();
             }, 100);
 
-            // Müziği Başlat
             attemptPlay();
         }
 
-        // Müzik Başlatma Fonksiyonu (Daha Güçlü Hata Yönetimi)
+        // Müzik Başlatma
         function attemptPlay() {
             music.volume = 0.5;
-            
-            // Promise döndürür
             const playPromise = music.play();
 
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    // Başarılı oynatma
                     isPlaying = true;
                     musicIcon.classList.add("spin-record");
                 }).catch(error => {
-                    // Otomatik oynatma engellendi
-                    console.log("Otomatik oynatma tarayıcı tarafından engellendi. Kullanıcı etkileşimi bekleniyor.");
+                    console.log("Otomatik oynatma engellendi. Kullanıcı etkileşimi bekleniyor.");
                     isPlaying = false;
                     musicIcon.classList.remove("spin-record");
-                    
-                    // Yedek plan: Sayfada herhangi bir yere tıklanırsa müziği başlat
                     document.addEventListener('click', forcePlayOnInteraction, { once: true });
                 });
             }
         }
 
-        // Yedek Plan Fonksiyonu
         function forcePlayOnInteraction() {
             if (!isPlaying) {
                 music.play().then(() => {
@@ -606,7 +601,7 @@
             }
         }
 
-        // Müzik Aç/Kapat Butonu
+        // Müzik Aç/Kapat
         function toggleMusic() {
             if (isPlaying) {
                 music.pause();
