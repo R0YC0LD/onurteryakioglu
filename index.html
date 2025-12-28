@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <link rel="icon" href="marmara.png" type="image/png">
+    
+    <title>Onur Teryakioğlu | Classified Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Playfair+Display+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- 1940's NOIR & RETRO PALETTE --- */
+        :root {
+            --bg-color: #0d0b0a;
+            --paper-bg: rgba(30, 25, 22, 0.9);
+            --text-color: #e0d5c1;
+            --vintage-gold: #c5a065;
+            --ink-red: #a80505;
+            --success-green: #2e8b57;
+        }
+
+        ::selection { background: var(--vintage-gold); color: #000; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier Prime', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--vintage-gold) var(--bg-color);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: var(--vintage-gold); border-radius: 3px; }
+
+        /* --- ARKA PLAN VE EFEKTLER --- */
+        .scanlines {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.15));
+            background-size: 100% 4px; z-index: 8000; pointer-events: none; opacity: 0.4;
+        }
+
+        .film-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 8001; opacity: 0.06;
+            background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
+            animation: grain 2s steps(10) infinite;
+        }
+
+        .vignette {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 8002;
+            background: radial-gradient(circle, transparent 50%, #000 120%);
+        }
+
+        @keyframes grain {
+            0%, 100% { transform:translate(0, 0) } 10% { transform:translate(-5%, -5%) } 20% { transform:translate(-10%, 5%) }
+            30% { transform:translate(5%, -10%) } 40% { transform:translate(-5%, 15%) } 50% { transform:translate(-10%, 5%) }
+            60% { transform:translate(15%, 0) } 70% { transform:translate(0, 10%) } 80% { transform:translate(-15%, 0) }
+            90% { transform:translate(10%, 5%) }
+        }
+
+        /* --- GİRİŞ EKRANI (Kilit Mantığı) --- */
+        #enter-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #080706; z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 1s cubic-bezier(0.77, 0, 0.175, 1);
+            padding: 20px;
+            /* Başlangıçta tıklanamaz */
+            cursor: wait; 
+        }
+        
+        /* Tıklanabilir olduğunda eklenecek class */
+        #enter-screen.unlocked {
+            cursor: pointer;
+        }
+
+        .enter-content {
+            border: 1px solid var(--vintage-gold);
+            padding: 40px; text-align: center;
+            background: rgba(20, 18, 16, 0.95);
+            box-shadow: 0 0 80px rgba(197, 160, 101, 0.1);
+            position: relative; max-width: 450px; width: 100%;
+            transition: all 0.5s;
+        }
+
+        /* Kilit açıldığında parlasın */
+        #enter-screen.unlocked .enter-content {
+            box-shadow: 0 0 50px rgba(46, 139, 87, 0.2);
+            border-color: var(--success-green);
+        }
+
+        .stamp-mark {
+            font-family: 'Playfair Display SC', serif;
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            color: var(--ink-red); border: 3px solid var(--ink-red);
+            display: inline-block; padding: 5px 25px;
+            transform: rotate(-12deg); margin-bottom: 25px;
+            opacity: 0.9; letter-spacing: 4px;
+            mask-image: url('https://www.transparenttextures.com/patterns/dust.png');
+            -webkit-mask-image: url('https://www.transparenttextures.com/patterns/dust.png');
+            animation: stampIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transition: color 0.3s, border-color 0.3s;
+        }
+
+        #enter-screen.unlocked .stamp-mark {
+            color: var(--success-green);
+            border-color: var(--success-green);
+            transform: rotate(-12deg) scale(1.1);
+        }
+
+        @keyframes stampIn { from { transform: scale(2) rotate(-12deg); opacity: 0; } to { transform: scale(1) rotate(-12deg); opacity: 0.9; } }
+
+        .loading-bar-container {
+            width: 100%; height: 3px; background: #333; margin-top: 25px;
+            position: relative; overflow: hidden;
+        }
+        .loading-bar {
+            height: 100%; background: var(--vintage-gold); width: 0%;
+            /* 3 saniyelik yükleme animasyonu */
+            animation: loadProgress 3s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+        }
+
+        #enter-screen.unlocked .loading-bar {
+            background: var(--success-green);
+        }
+
+        .enter-text {
+            font-size: 0.9rem; margin-top: 15px; letter-spacing: 2px; color: var(--vintage-gold);
+            font-weight: bold; text-transform: uppercase;
+        }
+
+        .click-hint {
+            font-size: 0.75rem; color: #666; margin-top: 20px;
+            letter-spacing: 2px; opacity: 0; transition: opacity 0.5s;
+        }
+        
+        #enter-screen.unlocked .click-hint {
+            opacity: 1; animation: blink 1.5s infinite;
+        }
+
+        /* --- ANA İÇERİK --- */
+        .container {
+            max-width: 750px; width: 92%; margin: 0 auto;
+            padding: 40px 0 120px 0;
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 1.2s ease, transform 1.2s ease;
+            display: none; position: relative; z-index: 10;
+        }
+
+        .profile-section {
+            text-align: center; margin-bottom: 60px;
+            /* Parallax için pozisyon */
+            transform: translateZ(0); 
+        }
+
+        .profile-img-container {
+            position: relative; width: 160px; height: 160px;
+            margin: 0 auto 25px; padding: 5px; background: #fff;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            transform: rotate(-3deg); transition: transform 0.4s;
+        }
+        .profile-img-container:hover { transform: rotate(0deg) scale(1.05); }
+
+        .profile-img {
+            width: 100%; height: 100%; object-fit: cover;
+            filter: sepia(0.6) grayscale(0.4) contrast(1.1); border: 1px solid #111;
+        }
+
+        .typewriter h1 {
+            font-family: 'Playfair Display SC', serif;
+            font-size: clamp(1.5rem, 5vw, 2.8rem);
+            color: var(--text-color); margin-bottom: 8px; font-weight: 700;
+            text-shadow: 2px 2px 4px #000;
+            border-bottom: 2px solid var(--vintage-gold);
+            display: inline-block; white-space: nowrap; overflow: hidden;
+            border-right: .15em solid var(--vintage-gold);
+            animation: typing 3s steps(30, end), blink-caret .75s step-end infinite;
+            max-width: 0; animation-fill-mode: forwards;
+        }
+
+        .title {
+            font-size: 0.9rem; color: var(--vintage-gold); letter-spacing: 3px;
+            margin-top: 10px; opacity: 0; animation: fadeIn 1s ease 3s forwards;
+        }
+
+        /* --- MODERN RETRO KART TASARIMI --- */
+        .card {
+            background: var(--paper-bg);
+            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(197, 160, 101, 0.2);
+            padding: 30px; margin-bottom: 35px;
+            opacity: 0; transform: translateY(40px) scale(0.95); filter: blur(4px);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .card.visible { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+
+        .card::before { content: ''; position: absolute; top: 0; left: 0; width: 10px; height: 10px; border-top: 2px solid var(--vintage-gold); border-left: 2px solid var(--vintage-gold); transition: 0.4s; }
+        .card::after { content: ''; position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-bottom: 2px solid var(--vintage-gold); border-right: 2px solid var(--vintage-gold); transition: 0.4s; }
+        .card:hover::before, .card:hover::after { width: 100%; height: 100%; opacity: 0.1; }
+
+        .section-header {
+            display: flex; align-items: center; margin-bottom: 25px;
+            border-bottom: 1px solid rgba(197, 160, 101, 0.2); padding-bottom: 15px;
+        }
+        .section-header i { color: var(--vintage-gold); font-size: 1.3rem; margin-right: 15px; }
+        .section-header h2 { font-family: 'Playfair Display SC', serif; font-size: 1.4rem; color: var(--text-color); letter-spacing: 2px; }
+
+        .info-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 15px; }
+        .info-item-label { color: #888; font-size: 0.85rem; letter-spacing: 1px; display: flex; align-items: center; }
+        .info-item-label::before { content: '>'; color: var(--vintage-gold); margin-right: 8px; font-weight: bold; }
+        .info-item-value { color: var(--text-color); font-size: 1rem; border-bottom: 1px solid #222; padding-bottom: 5px; }
+
+        .edu-flex { display: flex; align-items: center; gap: 25px; }
+        .uni-logo { width: 75px; filter: grayscale(1) brightness(0.8); transition: all 0.5s; }
+        .card:hover .uni-logo { filter: grayscale(0) brightness(1); transform: scale(1.1); }
+
+        .highlight { color: var(--vintage-gold); text-decoration: none; position: relative; font-weight: bold; transition: color 0.3s; }
+        .highlight:hover { color: #fff; }
+
+        .skill-tags { display: flex; flex-wrap: wrap; gap: 12px; }
+        .tag {
+            background: rgba(0,0,0,0.4); border: 1px solid #444; color: #aaa;
+            padding: 8px 16px; font-size: 0.85rem; cursor: default;
+            transition: all 0.3s; border-radius: 2px;
+        }
+        .tag:hover { border-color: var(--vintage-gold); color: var(--vintage-gold); background: rgba(197, 160, 101, 0.05); }
+
+        footer { text-align: center; font-size: 0.8rem; color: #444; margin-top: 60px; border-top: 1px solid #222; padding-top: 30px; }
+
+        /* Müzik Butonu */
+        .music-control {
+            position: fixed; bottom: 30px; right: 30px;
+            bottom: max(30px, env(safe-area-inset-bottom) + 20px);
+            width: 60px; height: 60px; background: #0a0a0a;
+            border: 2px solid var(--vintage-gold); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            color: var(--vintage-gold); cursor: pointer; z-index: 9000;
+            box-shadow: 0 0 30px rgba(197, 160, 101, 0.2);
+            transition: transform 0.3s;
+        }
+        .music-control:active { transform: scale(0.9); }
+        .pulse-btn { animation: glowPulse 2s infinite; }
+        .spin-record { animation: spin 4s linear infinite; }
+
+        @keyframes glowPulse { 0% { box-shadow: 0 0 0 0 rgba(197, 160, 101, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(197, 160, 101, 0); } 100% { box-shadow: 0 0 0 0 rgba(197, 160, 101, 0); } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes blink { 50% { opacity: 0; } }
+        @keyframes fadeIn { to { opacity: 1; } }
+        @keyframes typing { from { max-width: 0; } to { max-width: 100%; } }
+        @keyframes blink-caret { from, to { border-color: transparent; } 50% { border-color: var(--vintage-gold); } }
+        @keyframes loadProgress { 0% { width: 0%; } 100% { width: 100%; } }
+
+        @media (max-width: 600px) {
+            .info-grid { grid-template-columns: 1fr; gap: 10px; }
+            .edu-flex { flex-direction: column; text-align: center; }
+            .card { padding: 25px 20px; }
+            .typewriter h1 { font-size: 1.8rem; white-space: normal; border: none; animation: fadeIn 2s forwards; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+    <div class="film-overlay"></div>
+    <div class="vignette"></div>
+
+    <div id="enter-screen">
+        <div class="enter-content">
+            <div class="stamp-mark" id="stamp-text">GİZLİ DOSYA</div>
+            <div class="enter-text" id="status-text">ŞİFRE ÇÖZÜLÜYOR...</div>
+            <div class="loading-bar-container">
+                <div class="loading-bar" id="load-bar"></div>
+            </div>
+            <div style="font-size: 0.75rem; color: #888; margin-top: 15px;">REF: R0YC0LD-SECURE-25</div>
+            <div class="click-hint">[ GİRİŞ ONAYLANDI - TIKLA ]</div>
+        </div>
+    </div>
+
+    <div class="container" id="main-content">
+        
+        <div class="profile-section" id="parallax-target">
+            <div class="profile-img-container">
+                <img src="onur.png" alt="Onur Teryakioğlu" class="profile-img" onerror="this.src='https://via.placeholder.com/150/000000/d4af37?text=NO+IMG'">
+            </div>
+            
+            <div class="typewriter">
+                <h1>ONUR TERYAKİOĞLU</h1>
+            </div>
+            
+            <p class="title">-- R0YC0LD | ENGINEER --</p>
+        </div>
+
+        <div class="card">
+            <div class="section-header">
+                <i class="fa-solid fa-user-secret"></i>
+                <h2>KİMLİK BİLGİLERİ</h2>
+            </div>
+            <div class="info-grid">
+                <div>
+                    <div class="info-item-label">KOD ADI</div>
+                    <div class="info-item-value">R0YC0LD</div>
+                </div>
+                <div>
+                    <div class="info-item-label">DURUM</div>
+                    <div class="info-item-value">Aktif / Lisans Öğrencisi</div>
+                </div>
+                <div>
+                    <div class="info-item-label">LOKASYON</div>
+                    <div class="info-item-value">İstanbul, Kadıköy</div>
+                </div>
+                <div>
+                    <div class="info-item-label">UZMANLIK</div>
+                    <div class="info-item-value">Elektrik-Elektronik Müh.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-header">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <h2>EĞİTİM GEÇMİŞİ</h2>
+            </div>
+            <div class="edu-flex">
+                <img src="marmara.png" alt="Marmara" class="uni-logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/tr/6/62/Marmara_%C3%9Cniversitesi_logo.png'">
+                <div class="edu-info">
+                    <a href="https://elm-teknoloji.marmara.edu.tr" target="_blank" class="highlight">Marmara Üniversitesi</a>
+                    <p style="margin-top:8px; color: #ccc;">Elektrik - Elektronik Mühendisliği</p>
+                    <p style="font-size: 0.85rem; color: #777; margin-top:5px;">2025 - [DEVAM EDİYOR]</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-header">
+                <i class="fa-solid fa-microchip"></i>
+                <h2>YETENEK ENVANTERİ</h2>
+            </div>
+            <div class="skill-tags">
+                <span class="tag">Müzik Prodüksiyon</span>
+                <span class="tag">Grafik Tasarım</span>
+                <span class="tag">NFC Teknolojileri</span>
+                <span class="tag">Sosyal Mühendislik</span>
+                <span class="tag">C / C++</span>
+                <span class="tag">Web Teknolojileri</span>
+                <span class="tag">Dijital Strateji</span>
+            </div>
+        </div>
+        
+        <div class="card" style="text-align: center;">
+            <div class="section-header" style="justify-content: center;">
+                <i class="fa-solid fa-link"></i>
+                <h2>İLETİŞİM AĞI</h2>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 30px; margin-top: 15px;">
+                <a href="https://www.instagram.com/on_r19/" target="_blank" class="social-btn" style="color: #e0d5c1; font-size: 1.5rem;"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://www.linkedin.com/in/onur-teryakioğlu-84a15b390/" target="_blank" class="social-btn" style="color: #e0d5c1; font-size: 1.5rem;"><i class="fa-brands fa-linkedin"></i></a>
+                <a href="mailto:onurteryakioglu@marun.edu.tr" class="social-btn" style="color: #e0d5c1; font-size: 1.5rem;"><i class="fa-solid fa-envelope"></i></a>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2025 Onur Teryakioğlu.<br>
+            Tüm Hakları Saklıdır. | NFC Secure Protocol v2.1
+        </footer>
+    </div>
+
+    <div class="music-control pulse-btn" id="music-btn" title="Jazz Atmosferi">
+        <i class="fa-solid fa-play" id="music-icon"></i>
+    </div>
+
+    <script>
+        const enterScreen = document.getElementById('enter-screen');
+        const stampText = document.getElementById('stamp-text');
+        const statusText = document.getElementById('status-text');
+        const mainContent = document.getElementById('main-content');
+        const musicBtn = document.getElementById('music-btn');
+        const musicIcon = document.getElementById('music-icon');
+        const parallaxTarget = document.getElementById('parallax-target');
+
+        // --- 1. KİLİT MEKANİZMASI ---
+        let isLocked = true;
+
+        // 3 saniyelik yükleme animasyonunun bitmesini bekle
+        setTimeout(() => {
+            isLocked = false;
+            
+            // UI Güncelleme
+            enterScreen.classList.add('unlocked');
+            stampText.innerText = "ERİŞİM AÇIK";
+            statusText.innerText = "ŞİFRE ÇÖZÜLDÜ";
+            statusText.style.color = "#2e8b57";
+            
+        }, 3000); // CSS animasyon süresiyle eşleşmeli (3s)
+
+        // --- 2. PROCEDURAL JAZZ AUDIO ENGINE (Noir Mood) ---
+        let audioCtx;
+        let isPlaying = false;
+        let jazzInterval;
+
+        function playJazzNote(freq, type, duration, vol) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = type;
+            osc.frequency.value = freq;
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(vol, now + 0.05); // Attack
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration); // Decay
+            
+            osc.start(now);
+            osc.stop(now + duration);
+        }
+
+        // Basit bir Noir/Blues havası için rastgele notalar
+        // Blues Scale in C: C, Eb, F, Gb, G, Bb
+        const bassNotes = [65.41, 77.78, 87.31, 92.50, 98.00, 116.54]; // Low freq
+        const rideFreqs = [5000, 6000, 4500]; // High hat noise simulation filters
+
+        function playNoirMood() {
+            if(!audioCtx) return;
+            
+            // 1. Walking Bass (Kontrbas)
+            const note = bassNotes[Math.floor(Math.random() * bassNotes.length)];
+            playJazzNote(note, 'triangle', 1.5, 0.3); // Tok ses
+
+            // 2. Ride Cymbal (Zil Sesi Simülasyonu - Noise)
+            // Web Audio'da noise oluşturmak biraz daha karmaşık olduğu için
+            // burada basit bir yüksek frekanslı ton kullanıp kısa tutarak zil hissi veriyoruz
+            if (Math.random() > 0.4) {
+                setTimeout(() => {
+                    playJazzNote(Math.random() * 2000 + 3000, 'square', 0.1, 0.02);
+                }, 500); // Swing hissi için gecikmeli
+            }
+
+            // 3. Arada bir Rhodes Piyano Akoru
+            if (Math.random() > 0.7) {
+                const chordRoot = note * 4; // 2 oktav yukarı
+                playJazzNote(chordRoot, 'sine', 2, 0.1);
+                playJazzNote(chordRoot * 1.2, 'sine', 2, 0.1); // Minor 3rd approx
+            }
+        }
+
+        function initAudio() {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+            
+            // Arka plan cızırtısını (Vinyl) ekle (çok düşük sesle)
+            const bufferSize = 2 * audioCtx.sampleRate;
+            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = noiseBuffer;
+            noise.loop = true;
+            const noiseGain = audioCtx.createGain();
+            noiseGain.gain.value = 0.02; // Çok kısık
+            noise.connect(noiseGain);
+            noiseGain.connect(audioCtx.destination);
+            noise.start();
+
+            // Jazz Loop Başlat
+            playNoirMood();
+            jazzInterval = setInterval(playNoirMood, 2000); // Her 2 saniyede bir yeni ölçü
+            
+            isPlaying = true;
+            updateMusicIcon();
+        }
+
+        function toggleAudio() {
+            if (!audioCtx) {
+                initAudio();
+                return;
+            }
+            if (audioCtx.state === 'running') {
+                audioCtx.suspend();
+                isPlaying = false;
+            } else if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+                isPlaying = true;
+            }
+            updateMusicIcon();
+        }
+
+        function updateMusicIcon() {
+            if (isPlaying) {
+                musicIcon.classList.remove('fa-play');
+                musicIcon.classList.add('fa-compact-disc', 'spin-record');
+                musicBtn.classList.remove('pulse-btn');
+            } else {
+                musicIcon.classList.remove('fa-compact-disc', 'spin-record');
+                musicIcon.classList.add('fa-play');
+                musicBtn.classList.add('pulse-btn');
+            }
+        }
+
+        // --- ETKİLEŞİM ---
+
+        enterScreen.addEventListener('click', function() {
+            if (isLocked) return; // Kilitliyse hiçbir şey yapma
+
+            initAudio(); // Müziği başlat
+            
+            // Ekranı kaldır
+            enterScreen.style.opacity = '0';
+            setTimeout(() => {
+                enterScreen.style.display = 'none';
+            }, 1000);
+
+            // İçeriği Göster
+            mainContent.style.display = 'block';
+            setTimeout(() => {
+                mainContent.style.opacity = '1';
+                mainContent.style.transform = 'translateY(0)';
+            }, 100);
+        });
+
+        musicBtn.addEventListener('click', toggleAudio);
+
+        // --- SCROLL & PARALLAX ---
+        
+        // Kartların Görünürlüğü
+        const observerOptions = { threshold: 0.15, rootMargin: "0px 0px -50px 0px" };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target); 
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card').forEach(card => {
+            observer.observe(card);
+        });
+
+        // Parallax Efekti (Kaydırma)
+        window.addEventListener('scroll', () => {
+            const scrollVal = window.scrollY;
+            // Profil resmini aşağı doğru daha yavaş kaydır
+            if(window.innerWidth > 600) { // Mobilde parallax bazen kasar, kapalı tutalım
+                parallaxTarget.style.transform = `translateY(${scrollVal * 0.3}px)`;
+                parallaxTarget.style.opacity = 1 - (scrollVal / 700);
+            }
+        });
+
+    </script>
+</body>
+</html>
